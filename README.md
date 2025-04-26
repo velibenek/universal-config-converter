@@ -1,43 +1,32 @@
 # Universal Config Converter
 
+[![PyPI version](https://badge.fury.io/py/universal-config-converter.svg)](https://badge.fury.io/py/universal-config-converter)
+[![Python CI](https://github.com/velibenek/universal-config-converter/actions/workflows/python-ci.yml/badge.svg)](https://github.com/velibenek/universal-config-converter/actions/workflows/python-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Tired of manually converting configuration files between JSON, YAML, TOML, .env, and others?** This simple command-line tool aims to make your life easier by automating the conversion process.
+**Tired of manually converting configuration files between different formats like JSON, YAML, TOML, .env, INI, and XML?** This simple command-line tool aims to automate the conversion process, making your life easier.
 
-`config-converter` allows you to effortlessly switch between common configuration formats, saving you time and reducing potential errors.
+`universal-config-converter` allows you to effortlessly switch between common configuration formats, saving you time and reducing potential errors.
 
-## Goals
+## Key Features
 
-*   Provide a **single, reliable CLI tool** for converting between the most popular configuration formats.
-*   Ensure the conversion process is **accurate and preserves data structure**.
-*   Maintain a **simple and intuitive user interface**.
-*   Build a **community-driven tool** that adapts to new formats and user needs.
-
-## Features & Roadmap
-
-Here's what the tool can do and what's planned for the future:
-
-*   [x] **Command-Line Interface (CLI):** Easy-to-use commands via `click`.
-*   [x] **Core Conversion Logic:** Foundation for loading and saving data.
-*   [x] **JSON Support:** Convert to/from JSON (`.json`).
-*   [x] **YAML Support:** Convert to/from YAML (`.yaml`, `.yml`).
-*   [x] **TOML Support:** Convert to/from TOML (`.toml`).
-*   [x] **.env Support:** Convert to/from environment variable files (`.env`).
-*   [x] **INI Support:** Convert to/from INI files (`.ini`).
-*   [x] **XML Support:** Convert to/from XML files (`.xml`).
-*   [ ] **Comment Preservation:** Attempt to keep comments intact during conversion.
-    *   [x] YAML (using `ruamel.yaml`, load/save cycle preserves comments)
-    *   [ ] INI (Difficult with standard `configparser`, potential future enhancement)
-    *   [x] TOML (using `tomlkit`, load/save cycle preserves comments)
-    *   Note: Comments are generally lost for JSON, .env, XML conversions.
-*   [x] **Data Validation:** Option to validate input/output against a JSON schema.
-*   [x] **Basic Unit Tests:** Initial tests for core functionality.
-*   [x] **Comprehensive Test Suite:** More tests covering edge cases and all formats (Further additions welcome!).
-*   [x] **Pre-commit Hooks:** Ensure code quality and consistency.
-*   [x] **PyPI Packaging:** Make it easily installable via `pip install config-converter`.
-*   [x] **GitHub Actions CI:** Automate testing on pushes and pull requests.
+*   **Wide Format Support:** Convert between JSON, YAML, TOML, .env, INI, and XML.
+*   **Command-Line Interface (CLI):** Easy and intuitive usage powered by `click`.
+*   **Data Validation:** Option to validate input and output data against a JSON schema.
+*   **Comment Preservation (Partial):** Attempts to preserve comments in YAML (using `ruamel.yaml`) and TOML (using `tomlkit`) formats (comments are generally lost in other formats).
+*   **Flexibility:** Convert formats or simply validate files against a schema with a single command.
 
 ## Installation
+
+### From PyPI (Recommended)
+
+The easiest way to install is using `pip`:
+
+```bash
+pip install universal-config-converter
+```
+
+### Development Setup (For contributing or trying the latest changes)
 
 1.  **Clone the repository:**
     ```bash
@@ -47,56 +36,95 @@ Here's what the tool can do and what's planned for the future:
 2.  **Create and activate a virtual environment (Recommended):**
     ```bash
     python3 -m venv .venv
-    source .venv/bin/activate # On Windows use `.venv\Scripts\activate`
+    # On Linux/macOS:
+    source .venv/bin/activate
+    # On Windows:
+    # .venv\Scripts\activate
     ```
 3.  **Install dependencies:**
     ```bash
-    pip install -r requirements.txt
-    # Also install pytest for running tests
-    pip install pytest
+    pip install -e .[dev]
     ```
+    *(This installs the project in editable mode along with development dependencies like pytest.)*
 
 ## Usage
 
-Convert a file from one format to another:
+The basic command structure is:
 
 ```bash
-config-converter -i <input_path> -s <format> -t <format> -o <output_path> [options]
+config-converter -i <input_path> -s <source_format> -t <target_format> -o <output_path> [options]
 ```
 
-**Example:** Convert `config.json` to `config.yaml`:
+**Arguments:**
 
-```bash
-config-converter -i config.json -s json -t yaml -o config.yaml
-```
+*   `-i`, `--input-path`: Path to the input file.
+*   `-s`, `--source-format`: Format of the input file (`json`, `yaml`, `toml`, `env`, `ini`, `xml`).
+*   `-t`, `--target-format`: Desired output format (`json`, `yaml`, `toml`, `env`, `ini`, `xml`).
+*   `-o`, `--output-path`: Path where the output file will be saved.
 
-**Example with Input Validation:** Validate `config.json` against `schema.json` before converting:
+**Options:**
 
-```bash
-config-converter -i config.json -s json -t yaml -o config.yaml --input-schema schema.json
-```
+*   `--input-schema`: Path to a JSON schema file to validate the input against.
+*   `--output-schema`: Path to a JSON schema file to validate the output against before saving.
+*   `--help`: Show the help message and exit.
 
-**Example with Output Validation:** Convert `config.json` to `config.yaml` and validate the result against `schema.json` before saving:
+**Examples:**
 
-```bash
-config-converter -i config.json -s json -t yaml -o config.yaml --output-schema schema.json
-```
+1.  **Convert JSON to YAML:**
+    ```bash
+    config-converter -i config.json -s json -t yaml -o config.yaml
+    ```
 
-Supported formats currently: `json`, `yaml`, `toml`, `env`, `ini`, `xml`.
+2.  **Convert YAML to TOML:**
+    ```bash
+    config-converter -i settings.yaml -s yaml -t toml -o settings.toml
+    ```
+
+3.  **Generate JSON from a .env File:**
+    ```bash
+    config-converter -i .env -s env -t json -o config.json
+    ```
+
+4.  **Convert INI to XML:**
+    ```bash
+    config-converter -i parameters.ini -s ini -t xml -o parameters.xml
+    ```
+
+5.  **Convert with Input Validation:** Validate `config.json` against `schema.json` before converting to YAML.
+    ```bash
+    config-converter -i config.json -s json -t yaml -o config.yaml --input-schema schema.json
+    ```
+
+6.  **Convert with Output Validation:** Convert JSON to YAML and validate the result against `schema.json` before saving.
+    ```bash
+    config-converter -i config.json -s json -t yaml -o config.yaml --output-schema schema.json
+    ```
+
+7.  **Validate Input Only:** Check if `config.toml` conforms to `schema.json` (no output file is written if `-o` is omitted).
+    ```bash
+    config-converter -i config.toml -s toml --input-schema schema.json
+    ```
+
+## Supported Formats
+
+Currently supported formats: `json`, `yaml`, `toml`, `env`, `ini`, `xml`.
 
 ## Contributing
 
-Contributions are welcome! If you'd like to help improve `config-converter`, please feel free to:
+Contributions are welcome! If you'd like to help improve `universal-config-converter`, please feel free to:
 
-*   Report bugs or suggest features by opening an issue.
-*   Submit pull requests with bug fixes or new features (especially those on the roadmap!).
+*   Report bugs or suggest features by opening an [Issue](https://github.com/velibenek/universal-config-converter/issues).
+*   Submit pull requests with bug fixes or new features.
 *   Improve the documentation.
 
-Please check the `CONTRIBUTING.md` file (to be created) for more detailed guidelines.
+Please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) file for more detailed guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [`LICENSE`](LICENSE) file for details.
 
-[Homepage](https://github.com/velibenek/universal-config-converter)
-[Issues](https://github.com/velibenek/universal-config-converter/issues)
+## Links
+
+*   [GitHub Repository](https://github.com/velibenek/universal-config-converter)
+*   [PyPI Package](https://pypi.org/project/universal-config-converter/)
+*   [Issue Tracker](https://github.com/velibenek/universal-config-converter/issues)
