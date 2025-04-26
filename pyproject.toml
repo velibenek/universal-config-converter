@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "universal-config-converter"
 version = "0.1.0" # Initial version
 authors = [
-  { name="Your Name", email="youremail@example.com" }, # Replace with your details
+  { name="velibenek", email="veli@example.com" }, # Updated placeholders
 ]
 description = "A command-line tool to convert between various configuration file formats (JSON, YAML, TOML, .env, INI, XML)."
 readme = "README.md"
@@ -22,15 +22,17 @@ classifiers = [
 ]
 dependencies = [
     "pyyaml>=6.0",
+    "ruamel.yaml>=0.17.0",
     "toml>=0.10.2",
     "python-dotenv>=1.0.0", # Updated requirement based on common usage
     "click>=8.0",
     "xmltodict>=0.13.0",
+    "jsonschema>=4.0.0", # Add jsonschema for validation
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/config-converter" # Replace with your repo URL later
-Issues = "https://github.com/YOUR_USERNAME/config-converter/issues" # Replace with your repo URL later
+Homepage = "https://github.com/velibenek/universal-config-converter"
+Issues = "https://github.com/velibenek/universal-config-converter/issues"
 
 [project.scripts]
 config-converter = "config_converter.main:main"

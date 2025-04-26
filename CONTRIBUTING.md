@@ -4,7 +4,7 @@ Thank you for your interest in contributing to this project!
 
 ## Reporting Issues
 
-If you find a bug or have a feature request, please check the existing [issues](https://github.com/YOUR_USERNAME/config-converter/issues) first. If your issue is not listed, feel free to open a new one. Please provide as much detail as possible, including:
+If you find a bug or have a feature request, please check the existing [issues](https://github.com/velibenek/universal-config-converter/issues) first. If your issue is not listed, feel free to open a new one. Please provide as much detail as possible, including:
 
 *   Steps to reproduce the bug.
 *   Expected behavior.

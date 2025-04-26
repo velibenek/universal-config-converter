@@ -25,11 +25,15 @@ Here's what the tool can do and what's planned for the future:
 *   [x] **.env Support:** Convert to/from environment variable files (`.env`).
 *   [x] **INI Support:** Convert to/from INI files (`.ini`).
 *   [x] **XML Support:** Convert to/from XML files (`.xml`).
-*   [ ] **Comment Preservation:** Attempt to keep comments intact during conversion (where applicable, e.g., YAML).
-*   [ ] **Data Validation:** Option to validate input/output against a schema.
+*   [ ] **Comment Preservation:** Attempt to keep comments intact during conversion.
+    *   [x] YAML (using `ruamel.yaml`, load/save cycle preserves comments)
+    *   [ ] INI (Potential future enhancement)
+    *   [ ] TOML (Potential future enhancement with `tomlkit`)
+    *   Note: Comments are generally lost for JSON, .env, XML conversions.
+*   [x] **Data Validation:** Option to validate input/output against a JSON schema.
 *   [x] **Basic Unit Tests:** Initial tests for core functionality.
-*   [ ] **Comprehensive Test Suite:** More tests covering edge cases and all formats.
-*   [ ] **Pre-commit Hooks:** Ensure code quality and consistency.
+*   [x] **Comprehensive Test Suite:** More tests covering edge cases and all formats (Further additions welcome!).
+*   [x] **Pre-commit Hooks:** Ensure code quality and consistency.
 *   [x] **PyPI Packaging:** Make it easily installable via `pip install config-converter`.
 *   [x] **GitHub Actions CI:** Automate testing on pushes and pull requests.
 
@@ -37,8 +41,8 @@ Here's what the tool can do and what's planned for the future:
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/config-converter.git # Replace with your repo URL later
-    cd config-converter
+    git clone https://github.com/velibenek/universal-config-converter.git
+    cd universal-config-converter
     ```
 2.  **Create and activate a virtual environment (Recommended):**
     ```bash
@@ -57,13 +61,25 @@ Here's what the tool can do and what's planned for the future:
 Convert a file from one format to another:
 
 ```bash
-python -m config_converter.main --input-file <input_path> --source-format <format> --target-format <format> --output-file <output_path>
+config-converter -i <input_path> -s <format> -t <format> -o <output_path> [options]
 ```
 
 **Example:** Convert `config.json` to `config.yaml`:
 
 ```bash
-python -m config_converter.main -i config.json -s json -t yaml -o config.yaml
+config-converter -i config.json -s json -t yaml -o config.yaml
+```
+
+**Example with Input Validation:** Validate `config.json` against `schema.json` before converting:
+
+```bash
+config-converter -i config.json -s json -t yaml -o config.yaml --input-schema schema.json
+```
+
+**Example with Output Validation:** Convert `config.json` to `config.yaml` and validate the result against `schema.json` before saving:
+
+```bash
+config-converter -i config.json -s json -t yaml -o config.yaml --output-schema schema.json
 ```
 
 Supported formats currently: `json`, `yaml`, `toml`, `env`, `ini`, `xml`.
@@ -80,4 +96,7 @@ Please check the `CONTRIBUTING.md` file (to be created) for more detailed guidel
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file (to be created) for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+[Homepage](https://github.com/velibenek/universal-config-converter)
+[Issues](https://github.com/velibenek/universal-config-converter/issues)
