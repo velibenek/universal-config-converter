@@ -1,5 +1,6 @@
 import click
 from .converter import convert
+import sys  # Import sys for exit codes
 
 
 @click.command()
@@ -35,16 +36,39 @@ from .converter import convert
     type=click.Path(dir_okay=False),
     help="Path to save the converted configuration file.",
 )
-def main(input_file, source_format, target_format, output_file):
+@click.option(
+    "--input-schema",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to a JSON schema file to validate the input against.",
+)
+@click.option(
+    "--output-schema",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to a JSON schema file to validate the output against.",
+)
+def main(
+    input_file, source_format, target_format, output_file, input_schema, output_schema
+):
     """Universal Config Converter CLI"""
     try:
-        convert(input_file, source_format, target_format, output_file)
+        convert(
+            input_file,
+            source_format,
+            target_format,
+            output_file,
+            input_schema,
+            output_schema,
+        )
         click.echo(
             f"Successfully converted '{input_file}' ({source_format}) to "
             f"'{output_file}' ({target_format})"
         )
+    except ValueError as e:  # Catch specific errors like validation errors
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)  # Exit with non-zero status for errors
     except Exception as e:
-        click.echo(f"Error during conversion: {e}", err=True)
+        click.echo(f"An unexpected error occurred: {e}", err=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

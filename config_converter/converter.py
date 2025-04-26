@@ -1,10 +1,16 @@
 import json
-import yaml
-import toml
+
+# import yaml # Keep it commented or remove if fully replaced by ruamel
+import tomlkit  # Use tomlkit instead of toml
 from dotenv import dotenv_values, set_key
 import os
 import configparser  # Import configparser
 import xmltodict  # Import xmltodict
+from ruamel.yaml import YAML  # Import ruamel
+from ruamel.yaml.comments import CommentedMap, CommentedSeq  # Import specific types
+from jsonschema import validate  # Import validate function
+from jsonschema.exceptions import ValidationError
+from tomlkit.items import Table, Array
 
 # We will add dotenv later if needed
 
@@ -35,14 +41,18 @@ def load_config(file_path, format):
         with open(file_path, "r", encoding="utf-8") as f:
             # process_namespaces=True can be useful for complex XML
             return xmltodict.parse(f.read())
+    elif format == "yaml":  # Add yaml handling here
+        yaml_loader = YAML(typ="rt")  # typ='rt' (round-trip) preserves comments/styling
+        with open(file_path, "r", encoding="utf-8") as f:
+            return yaml_loader.load(f)
+    elif format == "toml":  # Use tomlkit for loading
+        with open(file_path, "r", encoding="utf-8") as f:
+            return tomlkit.load(f)
     with open(file_path, "r", encoding="utf-8") as f:
         if format == "json":
             return json.load(f)
-        elif format == "yaml":
-            return yaml.safe_load(f)
-        elif format == "toml":
-            return toml.load(f)
-        # Add other formats like 'env' here later
+        # elif format == "yaml": # Remove old yaml handling
+        #     return yaml.safe_load(f)
         else:
             raise ValueError(f"Unsupported source format: {format}")
 
@@ -141,26 +151,103 @@ def save_config(data, file_path, format):
             # indent='  ' for standard indentation
             f.write(xmltodict.unparse(xml_data, pretty=True, indent="  "))
         return
+    elif format == "yaml":  # Add yaml handling here
+        yaml_dumper = YAML(typ="rt")
+        yaml_dumper.indent(mapping=2, sequence=4, offset=2)
+        with open(file_path, "w", encoding="utf-8") as f:
+            yaml_dumper.dump(data, f)
+        return
+    elif format == "toml":  # Use tomlkit for saving
+        with open(file_path, "w", encoding="utf-8") as f:
+            tomlkit.dump(data, f)
+        return
 
     with open(file_path, "w", encoding="utf-8") as f:
         if format == "json":
             json.dump(
                 data, f, indent=4, ensure_ascii=False
             )  # ensure_ascii=False for broader char support
-        elif format == "yaml":
-            yaml.dump(
-                data, f, default_flow_style=False, allow_unicode=True
-            )  # allow_unicode=True
-        elif format == "toml":
-            # TOML library might handle encoding internally, check its docs if issues arise
-            toml.dump(data, f)
-        # Add other formats like 'env' here later
+        # elif format == "yaml": # Remove old yaml handling
+        #     yaml.dump(
+        #         data, f, default_flow_style=False, allow_unicode=True
+        #     )  # allow_unicode=True
         else:
             raise ValueError(f"Unsupported target format: {format}")
 
 
-def convert(input_file, source_format, target_format, output_file):
-    """Converts a configuration file from source_format to target_format."""
+def validate_data(data, schema_path):
+    """Validates data against a JSON schema file."""
+    if not schema_path:
+        return  # No schema provided, skip validation
+
+    try:
+        with open(schema_path, "r", encoding="utf-8") as f:
+            schema = json.load(f)
+    except Exception as e:
+        raise ValueError(f"Error loading schema file '{schema_path}': {e}")
+
+    try:
+        # Convert ruamel types to standard Python dict/list for validation
+        if isinstance(data, (CommentedMap, CommentedSeq)):
+            # Convert ruamel types to standard Python dict/list using a helper
+            data_for_validation = _convert_ruamel_to_standard(data)
+        else:
+            data_for_validation = data
+
+        validate(instance=data_for_validation, schema=schema)
+        print(f"Data validated successfully against schema '{schema_path}'.")
+    except ValidationError as e:
+        raise ValueError(f"Schema validation failed: {e.message}")
+    except Exception as e:
+        # Catch other potential errors during validation
+        raise ValueError(f"An error occurred during schema validation: {e}")
+
+
+# Helper function to recursively convert ruamel types
+def _convert_ruamel_to_standard(item):
+    if isinstance(item, CommentedMap):
+        return {k: _convert_ruamel_to_standard(v) for k, v in item.items()}
+    elif isinstance(item, CommentedSeq):
+        return [_convert_ruamel_to_standard(elem) for elem in item]
+    else:
+        return item
+
+
+# Helper function to recursively convert tomlkit types
+def _convert_tomlkit_to_standard(item):
+    if isinstance(item, Table):
+        # Use item.value for Tables obtained from parsing
+        # Use item.items() if constructing manually?
+        # Let's try .value first for loaded data
+        try:
+            # Use .unwrap() to get the underlying dict/list
+            return {
+                k: _convert_tomlkit_to_standard(v) for k, v in item.unwrap().items()
+            }
+        except AttributeError:
+            # Fallback or different handling if .unwrap() not available
+            return {k: _convert_tomlkit_to_standard(v) for k, v in item.items()}
+    elif isinstance(item, Array):
+        return [_convert_tomlkit_to_standard(elem) for elem in item.unwrap()]
+    elif hasattr(
+        item, "value"
+    ):  # Handle AoT, etc. by getting primitive value if possible
+        return item.value
+    else:
+        return item
+
+
+def convert(
+    input_file,
+    source_format,
+    target_format,
+    output_file,
+    input_schema=None,
+    output_schema=None,
+):
+    """Converts a configuration file from source_format to target_format,
+    optionally validating against JSON schemas.
+    """
     # Normalize formats to lower case
     source_format = source_format.lower()
     target_format = target_format.lower()
@@ -170,6 +257,17 @@ def convert(input_file, source_format, target_format, output_file):
 
     # Load data from the source file
     data = load_config(input_file, source_format)
+
+    # Validate input data if schema provided
+    if input_schema:
+        print(f"Validating input data from '{input_file}'...")
+        validate_data(data, input_schema)
+
+    # Validate output data if schema provided
+    # Note: Validation happens *before* saving, using the in-memory data.
+    if output_schema:
+        print(f"Validating output data for '{output_file}'...")
+        validate_data(data, output_schema)
 
     # Save data to the target file
     save_config(data, output_file, target_format)

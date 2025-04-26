@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "database": {
+      "type": "object",
+      "properties": {
+        "host": {"type": "string"},
+        "port": {"type": "integer"},
+        "user": {"type": "string"},
+        "enabled": {"type": "boolean"}
+      },
+      "required": ["host", "port"]
+    },
+    "api_settings": {
+      "type": "object",
+      "properties": {
+        "key": {"type": "string", "minLength": 10},
+        "retries": {"type": "integer", "minimum": 0}
+      },
+      "required": ["key"]
+    },
+    "feature_flags": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": ["database", "api_settings"]
+}

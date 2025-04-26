@@ -27,8 +27,8 @@ Here's what the tool can do and what's planned for the future:
 *   [x] **XML Support:** Convert to/from XML files (`.xml`).
 *   [ ] **Comment Preservation:** Attempt to keep comments intact during conversion.
     *   [x] YAML (using `ruamel.yaml`, load/save cycle preserves comments)
-    *   [ ] INI (Potential future enhancement)
-    *   [ ] TOML (Potential future enhancement with `tomlkit`)
+    *   [ ] INI (Difficult with standard `configparser`, potential future enhancement)
+    *   [x] TOML (using `tomlkit`, load/save cycle preserves comments)
     *   Note: Comments are generally lost for JSON, .env, XML conversions.
 *   [x] **Data Validation:** Option to validate input/output against a JSON schema.
 *   [x] **Basic Unit Tests:** Initial tests for core functionality.
