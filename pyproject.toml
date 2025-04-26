@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "universal-config-converter"
 version = "0.1.0" # Initial version
 authors = [
-  { name="velibenek", email="veli@example.com" }, # Updated placeholders
+  { name="velibenek", email="velibenek@gmail.com" }, # Updated email
 ]
 description = "A command-line tool to convert between various configuration file formats (JSON, YAML, TOML, .env, INI, XML)."
 readme = "README.md"
