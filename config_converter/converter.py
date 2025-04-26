@@ -3,17 +3,19 @@ import yaml
 import toml
 from dotenv import dotenv_values, set_key
 import os
-import configparser # Import configparser
-import xmltodict # Import xmltodict
+import configparser  # Import configparser
+import xmltodict  # Import xmltodict
+
 # We will add dotenv later if needed
+
 
 def load_config(file_path, format):
     """Loads configuration from a file based on the format."""
-    if format == 'env':
+    if format == "env":
         # dotenv_values reads the file and returns a dict
         # It automatically handles comments and empty lines
         return dotenv_values(file_path)
-    elif format == 'ini':
+    elif format == "ini":
         config = configparser.ConfigParser()
         config.read(file_path)
         # Convert ConfigParser object to a nested dict for consistency
@@ -23,36 +25,39 @@ def load_config(file_path, format):
         # This might require adjustment based on how default sections are handled
         default_section = config.defaults()
         if default_section:
-             # Merge defaults carefully, maybe under a specific key like 'DEFAULT'
-             # or handle based on expected structure.
-             # Simple approach: merge into a special key if not empty.
-             # A more complex approach might be needed depending on INI structure conventions.
-             data['DEFAULT'] = dict(default_section)
+            # Merge defaults carefully, maybe under a specific key like 'DEFAULT'
+            # or handle based on expected structure.
+            # Simple approach: merge into a special key if not empty.
+            # A more complex approach might be needed depending on INI structure conventions.
+            data["DEFAULT"] = dict(default_section)
         return data
-    elif format == 'xml':
-        with open(file_path, 'r', encoding='utf-8') as f:
+    elif format == "xml":
+        with open(file_path, "r", encoding="utf-8") as f:
             # process_namespaces=True can be useful for complex XML
             return xmltodict.parse(f.read())
-    with open(file_path, 'r', encoding='utf-8') as f:
-        if format == 'json':
+    with open(file_path, "r", encoding="utf-8") as f:
+        if format == "json":
             return json.load(f)
-        elif format == 'yaml':
+        elif format == "yaml":
             return yaml.safe_load(f)
-        elif format == 'toml':
+        elif format == "toml":
             return toml.load(f)
         # Add other formats like 'env' here later
         else:
             raise ValueError(f"Unsupported source format: {format}")
 
+
 def save_config(data, file_path, format):
     """Saves configuration data to a file based on the format."""
-    if format == 'env':
+    if format == "env":
         # Ensure the output file exists or create it for set_key
         # Create the file if it doesn't exist, otherwise do nothing
         if not os.path.exists(file_path):
-            open(file_path, 'w').close()
-        elif os.path.getsize(file_path) > 0: # Clear the file if it exists and is not empty
-             open(file_path, 'w').close()
+            open(file_path, "w").close()
+        elif (
+            os.path.getsize(file_path) > 0
+        ):  # Clear the file if it exists and is not empty
+            open(file_path, "w").close()
 
         # Write key-value pairs, converting basic types to string
         # Note: This flattens the structure and only saves top-level keys.
@@ -62,22 +67,32 @@ def save_config(data, file_path, format):
         for key, value in data.items():
             if isinstance(value, (str, int, float, bool)):
                 # Convert bool to lower case string as per common .env practice
-                str_value = str(value).lower() if isinstance(value, bool) else str(value)
-                set_key(file_path, key, str_value, quote_mode='never') # Avoid unnecessary quotes
-                temp_env_vars[key] = str_value # Keep track of what was written
+                str_value = (
+                    str(value).lower() if isinstance(value, bool) else str(value)
+                )
+                set_key(
+                    file_path, key, str_value, quote_mode="never"
+                )  # Avoid unnecessary quotes
+                temp_env_vars[key] = str_value  # Keep track of what was written
             elif isinstance(value, dict):
-                 print(f"Warning: Skipping nested dictionary for key '{key}' when saving to .env")
+                print(
+                    f"Warning: Skipping nested dictionary for key '{key}' "
+                    f"when saving to .env"
+                )
             elif isinstance(value, list):
-                 print(f"Warning: Skipping list for key '{key}' when saving to .env")
+                print(f"Warning: Skipping list for key '{key}' when saving to .env")
             # Optionally, log a warning for other skipped complex types
             # else:
-            #     print(f"Warning: Skipping complex value type {type(value)} for key '{key}' when saving to .env")
+            #     print(
+            #          f"Warning: Skipping complex value type {type(value)} "
+            #          f"for key '{key}' when saving to .env"
+            #     )
 
         # Verify what's actually in the file after modifications (optional but good practice)
         # final_env_values = dotenv_values(file_path)
         # print(f"Final .env content for {file_path}: {final_env_values}") # Debugging line
-        return # set_key handles file writing
-    elif format == 'ini':
+        return  # set_key handles file writing
+    elif format == "ini":
         config = configparser.ConfigParser()
         # Iterate through the dictionary which should represent sections
         for section_name, section_data in data.items():
@@ -91,20 +106,26 @@ def save_config(data, file_path, format):
                 # Or raise an error/warning as INI requires sections.
                 # For now, let's put non-dict items in DEFAULT section if the key is 'DEFAULT'
                 # or skip otherwise with a warning.
-                if section_name == 'DEFAULT' and not isinstance(value, (dict, list)):
-                     # configparser handles DEFAULT section specially via defaults()
-                     # It might be better to handle default section assignment explicitly if needed.
-                     # Let's try adding non-dict/list items directly to the config object
-                     # This might assign them to the DEFAULT section implicitly by some parsers
-                     # but it's not standard. Let's stick to sections.
-                     print(f"Warning: Skipping non-dictionary top-level item '{section_name}' for INI output.")
+                if section_name == "DEFAULT" and not isinstance(value, (dict, list)):
+                    # configparser handles DEFAULT section specially via defaults()
+                    # It might be better to handle default section assignment explicitly if needed.
+                    # Let's try adding non-dict/list items directly to the config object
+                    # This might assign them to the DEFAULT section implicitly by some parsers
+                    # but it's not standard. Let's stick to sections.
+                    print(
+                        f"Warning: Skipping non-dictionary top-level item "
+                        f"'{section_name}' for INI output."
+                    )
                 elif not isinstance(section_data, dict):
-                     print(f"Warning: Skipping non-dictionary top-level item '{section_name}' for INI output.")
+                    print(
+                        f"Warning: Skipping non-dictionary top-level item "
+                        f"'{section_name}' for INI output."
+                    )
 
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             config.write(f)
         return
-    elif format == 'xml':
+    elif format == "xml":
         # xmltodict requires a single root element.
         # If data is a dict with one key, use that as root.
         # Otherwise, wrap the data in a default 'root' element.
@@ -113,25 +134,30 @@ def save_config(data, file_path, format):
             # Ensure the value is also suitable for unparse
             xml_data = {root_key: data[root_key]}
         else:
-            xml_data = {'root': data}
+            xml_data = {"root": data}
         # Write with encoding='utf-8'
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             # pretty=True for readable output
             # indent='  ' for standard indentation
-            f.write(xmltodict.unparse(xml_data, pretty=True, indent='  '))
+            f.write(xmltodict.unparse(xml_data, pretty=True, indent="  "))
         return
 
-    with open(file_path, 'w', encoding='utf-8') as f:
-        if format == 'json':
-            json.dump(data, f, indent=4, ensure_ascii=False) # ensure_ascii=False for broader char support
-        elif format == 'yaml':
-            yaml.dump(data, f, default_flow_style=False, allow_unicode=True) # allow_unicode=True
-        elif format == 'toml':
+    with open(file_path, "w", encoding="utf-8") as f:
+        if format == "json":
+            json.dump(
+                data, f, indent=4, ensure_ascii=False
+            )  # ensure_ascii=False for broader char support
+        elif format == "yaml":
+            yaml.dump(
+                data, f, default_flow_style=False, allow_unicode=True
+            )  # allow_unicode=True
+        elif format == "toml":
             # TOML library might handle encoding internally, check its docs if issues arise
             toml.dump(data, f)
         # Add other formats like 'env' here later
         else:
             raise ValueError(f"Unsupported target format: {format}")
+
 
 def convert(input_file, source_format, target_format, output_file):
     """Converts a configuration file from source_format to target_format."""

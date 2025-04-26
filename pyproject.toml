@@ -33,4 +33,4 @@ Homepage = "https://github.com/YOUR_USERNAME/config-converter" # Replace with yo
 Issues = "https://github.com/YOUR_USERNAME/config-converter/issues" # Replace with your repo URL later
 
 [project.scripts]
-config-converter = "config_converter.main:main" 
+config-converter = "config_converter.main:main"

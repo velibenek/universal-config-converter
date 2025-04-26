@@ -80,4 +80,4 @@ Please check the `CONTRIBUTING.md` file (to be created) for more detailed guidel
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file (to be created) for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file (to be created) for details.
