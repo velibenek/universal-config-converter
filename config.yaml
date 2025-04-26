@@ -1,0 +1,9 @@
+api_key: 12345abcdef
+database:
+  host: localhost
+  password: secret
+  port: 5432
+  user: admin
+logging:
+  file: /var/log/app.log
+  level: info
